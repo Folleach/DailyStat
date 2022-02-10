@@ -12,6 +12,7 @@ namespace DailyStat
     {
         public static void Main(string[] args)
         {
+            InitLog4Net();
             CreateHostBuilder(args).Build().Run();
         }
 

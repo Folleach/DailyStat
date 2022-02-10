@@ -1,16 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Cassandra.Mapping;
+using DailyStat.Repositories;
+using log4net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
 
 namespace DailyStat
 {
@@ -23,33 +18,36 @@ namespace DailyStat
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            Log.Info("Configure services...");
+            MappingConfiguration.Global.Define<DailyStatMappings>();
+            var settingsPath = Environment.GetEnvironmentVariable("FOLLEACH_DailyStatSettings"); 
+            Log.Info($"Settings path: {settingsPath}");
+            var settings = new Settings<DailyStatSettings>(settingsPath);
+            
+            services.AddSingleton(x => settings);
+            services.AddSingleton(x => new CassandraCluster(
+                login: settings.Get().CassandraUserName,
+                password: settings.Get().CassandraPassword,
+                keyspace: AppKeyspace,
+                contactPoints: settings.Get().CassandraContactPoints));
+            services.AddSingleton<EventRepository>();
+            services.AddSingleton<ThingRepository>();
+
             services.AddControllers();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "DailyStat", Version = "v1" });
-            });
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "DailyStat v1"));
-            }
-
-            app.UseHttpsRedirection();
+            app.UsePathBase("/dailyStat/api");
 
             app.UseRouting();
 
-            app.UseAuthorization();
-
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }
+
+        public const string AppKeyspace = "dailyStat";
+        private static readonly ILog Log = LogManager.GetLogger(typeof(Startup));
     }
 }

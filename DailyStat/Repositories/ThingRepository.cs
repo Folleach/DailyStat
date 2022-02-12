@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using DailyStat.Dtos;
 using DailyStat.Entities;
 
 namespace DailyStat.Repositories
@@ -19,6 +21,11 @@ namespace DailyStat.Repositories
                 DisplayName = displayName,
                 Color = "#fff"
             });
+        }
+
+        public async Task<IEnumerable<ThingEntity>> Get(string statId)
+        {
+            return await GetMapper().FetchAsync<ThingEntity>($"WHERE {nameof(ThingEntity.StatId)} = ?", statId);
         }
     }
 }

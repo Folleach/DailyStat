@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DailyStat.Dtos;
@@ -23,17 +24,14 @@ namespace DailyStat.Controllers
         }
         
         [HttpGet]
-        public IEnumerable<ThingDto> Get(string statId)
+        public async Task<IEnumerable<ThingDto>> Get(string statId)
         {
-            return new[]
+            return (await thingRepository.Get(statId)).Select(x => new ThingDto()
             {
-                new ThingDto()
-                {
-                    Color = "#FFF",
-                    Name = $"Hah — {statId}",
-                    IsCurrent = true
-                }
-            };
+                Name = x.DisplayName,
+                Color = x.Color,
+                IsCurrent = false
+            });
         }
 
         [HttpPost]

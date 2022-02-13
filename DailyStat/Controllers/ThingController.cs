@@ -28,6 +28,7 @@ namespace DailyStat.Controllers
         {
             return (await thingRepository.Get(statId)).Select(x => new ThingDto()
             {
+                Id = x.Id,
                 Name = x.DisplayName,
                 Color = x.Color,
                 IsCurrent = false
@@ -43,7 +44,8 @@ namespace DailyStat.Controllers
 
             return new EventInsertDto()
             {
-                Success = success
+                Success = success,
+                Selected = success ? normalizedName : string.Empty
             };
         }
     }

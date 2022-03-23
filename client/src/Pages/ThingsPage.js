@@ -35,7 +35,7 @@ export default function ThingsPage() {
         });
     }, [currentThing]);
 
-    return <div style={{margin: "18px"}}>
+    return <div>
         <h1>Things...</h1>
         {things.map(value => getItem(currentThing, statId, value, setCurrentThing))}
         <div>
